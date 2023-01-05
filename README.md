@@ -49,10 +49,12 @@ make -j4 && make install
 
 #### 推荐安装
 ```
+# 下载
+git clone git@github.com:yonghua4413/php-7.2.6-build.git
 # 构建镜像
-docker build --pull --rm -f "Dockerfile" -t php72:v2 "."
+docker build --pull --rm -f "Dockerfile" -t php72:latest "."
 # 创建容器
-docker run -itd --name php72 -p 9000:9000 -v /www:/www --network local.net php72:v2
+docker run -itd --name php72 -p 9000:9000 -v /www:/www --network local.net php72:latest
 ```
 - -v 目录需要一一对应
 - --network 需要分配网络，否则可能导致php容器无法与其他容器通信（如redis）
