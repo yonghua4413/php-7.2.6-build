@@ -4,7 +4,7 @@ FROM centos:7
 ENV TZ=Asia/Shanghai
 RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime
 
-COPY src/* /usr/local/src
+COPY ./src/* /usr/local/src/
 
 RUN yum update -y && yum install -y gcc autoconf gcc-c++ pcre-devel libxml2 libxml2-devel openssl openssl-devel bzip2 bzip2-devel libcurl libcurl-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel gmp gmp-devel readline readline-devel libxslt libxslt-devel systemd-devel openjpeg-devel libicu-devel \
     && yum clean all \
