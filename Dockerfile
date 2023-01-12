@@ -6,7 +6,7 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime
 
 COPY ./src/* /usr/local/src/
 
-RUN yum update -y && yum install -y gcc autoconf gcc-c++ pcre-devel libxml2 libxml2-devel openssl openssl-devel bzip2 bzip2-devel libcurl libcurl-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel gmp gmp-devel readline readline-devel libxslt libxslt-devel systemd-devel openjpeg-devel libicu-devel \
+RUN yum update -y && yum install -y gcc autoconf gcc-c++ git pcre-devel libxml2 libxml2-devel openssl openssl-devel bzip2 bzip2-devel libcurl libcurl-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel gmp gmp-devel readline readline-devel libxslt libxslt-devel systemd-devel openjpeg-devel libicu-devel \
     && yum clean all \
     && rm -rf /var/cache/yum/*
 
@@ -45,21 +45,31 @@ RUN cd /usr/local/src/php-7.2.6 && ./configure \
     --enable-zip \
     --enable-soap \
     --with-gettext \
-    --disable-fileinfo \
+    --enable-fileinfo \
     --enable-opcache \
     --with-xsl && make -j4 && make install 
 
 RUN cd /usr/local/src/php-7.2.6 && \
     cp php.ini-production /usr/local/php/etc/php.ini && \
+    sed -i -e 's/expose_php = On/expose_php = Off/g' /usr/local/php/etc/php.ini &&\
     cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf && \
     cp /usr/local/php/etc/php-fpm.d/www.conf.default /usr/local/php/etc/php-fpm.d/www.conf && \
-    sed -i -e 's/127.0.0.1:9000/0.0.0.0:9000/g' /usr/local/php/etc/php-fpm.d/www.conf
+    sed -i -e 's/127.0.0.1:9000/0.0.0.0:9000/g' /usr/local/php/etc/php-fpm.d/www.conf && \
+    ln -s /usr/local/php/bin/php /usr/bin/php && \
+    ln -s /usr/local/php/bin/phpize /usr/bin/phpize && \
+    ln -s /usr/local/php/sbin/php-fpm /usr/bin/php-fpm
 
 RUN cd /usr/local/src && \
     tar xvf phpredis-5.3.2.tar.gz && \
     cd phpredis-5.3.2 && /usr/local/php/bin/phpize && \
     ./configure --with-php-config=/usr/local/php/bin/php-config && make -j4 && make install && \
     echo 'extension="redis.so"' >> /usr/local/php/etc/php.ini && rm -rf phpredis
+
+# 安装composer
+COPY ./src/composer /usr/bin/composer
+RUN chmod +x /usr/bin/composer && composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/
+
+WORKDIR /data/www
 
 EXPOSE 9000
 
